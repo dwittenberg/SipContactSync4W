@@ -4,6 +4,8 @@ Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf eine
 Achtung: PhonerLite speichert seine CSV nur, wenn es geschlossen wird und ließt die
 CSV wenn es geöffnet wird. Daher bitte PhonerLite schließen, bevor der Sync ausgeführt wird.
 
+Achtung: Der Pfad für das externe Laufwerk kann aktuell noch nicht angepasst werden!
+
 ## Ablauf:
 1. Extern und Intern werden geladen.
 2. Suche nach markierten Änderungen auf Extern und Übertragung dieser auf Intern.
