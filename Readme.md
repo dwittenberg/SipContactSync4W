@@ -1,22 +1,5 @@
-Aufbau der .csv im Sync-Ordner
-
-1 #; [PC1Name];[PC2Name]
-2 [Tel];[Name];;[Kommentar];[NR][PC1Status];[NR][PC2Status]
-
-Status: 
-    ""           :  neu für diesen PC
-    [DateTime]+:  Neu
-    [DateTime] :  UpToDate
-    [DateTime]*:  Bearbeitet
-    [DateTime]-:  Gelöscht
-
-PCName: 
-Der Name des PC in den Systemeinstellungen. Könnte auch zufällig generiert werden und irgendwo gespeichert sein.
-
-DateTime: "yyyy-MM-dd HH:mm:ss,fff"
-
 # Beschreibung
-Dieses Programm synchronisiert das Telephonbuch von Phoner mit einer CSV auf einem beliebigen Pfad. Vorzugsweise Onedrive (o.ä.) oder ein Netzwerklaufwerk. 
+Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf einem beliebigen Pfad. Vorzugsweise Onedrive (o.ä.) oder ein Netzwerklaufwerk. 
 
 Achtung: PhonerLite speichert seine CSV nur, wenn es geschlossen wird und ließt die
 CSV wenn es geöffnet wird. Daher bitte PhonerLite schließen, bevor der Sync ausgeführt wird.
@@ -45,3 +28,21 @@ Der ändernde PC markiert seinen Status mit *. Ein anderer PC kann eine Bearbeit
 
 ### Löschen:
 Der löschende PC hängt ein - an den eigenen Status. Jeder, der gelöscht hat, macht auch ein -. Wenn alle ein - haben, wird der Eintrag entfernt. Vom Netzwerklaufwerk entfernt.
+
+## Technische Doku:
+### Aufbau der .csv im Sync-Ordner
+
+1 #; [PC1Name];[PC2Name]
+2 [Tel];[Name];;[Kommentar];[NR][PC1Status];[NR][PC2Status]
+
+### Status: 
+    ""           :  neu für diesen PC
+    [DateTime]+:  Neu
+    [DateTime] :  UpToDate
+    [DateTime]*:  Bearbeitet
+    [DateTime]-:  Gelöscht
+
+### PCName: 
+Der Name des PC in den Systemeinstellungen. Könnte auch zufällig generiert werden und irgendwo gespeichert sein.
+
+### DateTime: "yyyy-MM-dd HH:mm:ss,fff"
