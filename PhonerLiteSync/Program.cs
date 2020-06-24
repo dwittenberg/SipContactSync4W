@@ -11,8 +11,6 @@ namespace PhonerLiteSync
 {
     class Program
     {
-        public  static string _dateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-
         static void Main(string[] args)
         {
 

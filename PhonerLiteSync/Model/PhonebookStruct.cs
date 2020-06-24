@@ -7,7 +7,7 @@ namespace PhonerLiteSync
 {
     public class PhonebookStruct
     {
-        public int MyPosition { get; set; }
+        public int MyId { get; set; }
         public Computer[] Devices { get; set; }
 
         public Dictionary<string, AddressEntry> Addresses { get; set; }

@@ -55,7 +55,7 @@ namespace PhonerLiteSync
 
                     var entry = new AddressEntry(fields);
 
-                    if (entry != null)
+                    if (!string.IsNullOrEmpty(entry.Number))
                     {
                         result.Add(entry.Number, entry);
                     }
@@ -80,8 +80,12 @@ namespace PhonerLiteSync
             if (!parser.EndOfData)
             {
                 var headline = parser.ReadFields();
-                result.MyPosition = ReadHeadLine(headline);
+                result.MyId = ReadHeadLine(headline);
                 result.Devices = headline.Where(m => m != "#").Select(m => new Computer(m)).ToArray();
+                if (result.Devices.Length == result.MyId)
+                {
+                    result.Devices = result.Devices.Append(new Computer(result.MyId + Environment.MachineName)).ToArray();
+                }
                 result.Addresses = new Dictionary<string, AddressEntry>();
             }
 
@@ -92,7 +96,7 @@ namespace PhonerLiteSync
 
                 var entry = new AddressEntry(fields, result);
 
-                if (entry != null)
+                if (!string.IsNullOrEmpty(entry.Number))
                 {
                     result.Addresses.Add(entry.Number, entry);
                 }
@@ -103,23 +107,24 @@ namespace PhonerLiteSync
 
         private static int ReadHeadLine(string[] fields)
         {
+            int i = -1;
             if (fields[0] != "#")
             {
                 // No Correct Headline
-                return -1;
+                return i;
             }
 
             var myName = Environment.MachineName;
-            for (var i = 0; i < fields.Length; i++)
+            for (i = 0; i < fields.Length; i++)
             {
-                if (fields[i] == myName)
+                if (fields[i] == (i-1) + myName)
                 {
                     return i - 1;
                 }
             }
 
             // His computer read syc file first time
-            return 0;
+            return i-1;
         }
 
         private static Dictionary<string, AddressEntry> UpdateLocal(PhonebookStruct externFile, Dictionary<string, AddressEntry> localFile)
@@ -129,29 +134,35 @@ namespace PhonerLiteSync
                 return localFile;
             }
 
-            var list = externFile.Addresses.Values.Where(m => m.ToDoStatus != Status.UpToDate && m.ToDoLastChange != m.MyLastReadWrithe).ToList();
+            var listOfChanges = externFile.Addresses.Values.Where(m => m.LastChanger != null && m.LastChanger.Status != Status.UpToDate && m.LastChanger.Id != externFile.MyId || m.MyStatus.Status == Status.NewEntry).ToList();
 
-            foreach (var exEntry in list)
+            foreach (var exEntry in listOfChanges)
             {
                 var newEntry = new AddressEntry
                 {
                     Number = exEntry.Number,
                     Name = exEntry.Name,
                     Comment = exEntry.Comment,
-                    AllComputers = new ComputerStatus[0], // ToDo Check
+                    AllComputers = exEntry.AllComputers,
                 };
 
-                switch (exEntry.ToDoStatus)
+                switch (exEntry.LastChanger.Status)
                 {
                     case Status.NewEntry:
+                        if (localFile.ContainsKey(newEntry.Number))
+                        {
+                            localFile.Remove(newEntry.Number);
+                        }
+
                         localFile.Add(newEntry.Number, newEntry);
-                        exEntry.ToDoStatus = Status.UpToDate;
+                        exEntry.MyStatus.Status = Status.UpToDate;
                         break;
 
                     case Status.Removed:
                         if (localFile.ContainsKey(exEntry.Number))
                         {
                             localFile.Remove(exEntry.Number);
+                            exEntry.MyStatus.Status = Status.Removed;
                         }
 
                         break;
@@ -163,12 +174,12 @@ namespace PhonerLiteSync
                         }
 
                         localFile.Add(newEntry.Number, newEntry);
-                        exEntry.ToDoStatus = Status.UpToDate;
+
+                        exEntry.MyStatus.Status = Status.UpToDate;
                         break;
                 }
 
-                exEntry.AllComputers[externFile.MyPosition].LastChange = DateTime.Now;
-                exEntry.MyLastReadWrithe = DateTime.Now;
+                exEntry.MyStatus.LastChange = DateTime.Now;
             }
 
             return localFile;
@@ -185,7 +196,7 @@ namespace PhonerLiteSync
                 {
                     Addresses = new Dictionary<string, AddressEntry>(),
                     Devices = array,
-                    MyPosition = 0
+                    MyId = 0
                 };
 
                 localFile.Values.ToList()
@@ -197,37 +208,36 @@ namespace PhonerLiteSync
                                 Number = m.Number,
                                 Name = m.Name,
                                 Comment = m.Comment,
-                                ToDoStatus = Status.NewEntry,
-                                AllComputers = new ComputerStatus[0], // ToDo Check
-                                MyLastReadWrithe = DateTime.Now,
+                                MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.NewEntry),
+                                AllComputers = new ComputerStatus[1]{new ComputerStatus(0,DateTime.Now, Status.UpToDate)}, // ToDo Check
                             }));
 
                 return externFile;
             }
 
             // Add new Entry
-            localFile
-                  .Where(m => !externFile.Addresses.ContainsKey(m.Key))
-                  .Select(m => m.Value)
-                  .ToList()
-                  .ForEach(contact =>
-                  {
-                      contact.MyLastReadWrithe = DateTime.Now;
-                      contact.ToDoStatus = Status.NewEntry;
-                      contact.AllComputers[externFile.MyPosition].Status = Status.NewEntry;
-                      externFile.Addresses.Add(contact.Number, contact);
-                  });
+            var a = localFile
+                .Where(m => !externFile.Addresses.ContainsKey(m.Key))
+                .Select(m => m.Value)
+                .ToList();
+            foreach (var exContact in a)
+            {
+                exContact.MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.NewEntry);
+
+                exContact.AllComputers = externFile.Devices.Select(m => new ComputerStatus(m.Id, DateTime.MinValue, Status.Undefined)).ToArray();
+                exContact.AllComputers[exContact.MyStatus.Id] = exContact.MyStatus;
+                externFile.Addresses.Add(exContact.Number, exContact);
+            }
 
             // Remove Entry
             externFile.Addresses
                 .Where(m => !localFile.ContainsKey(m.Key))
                 .Select(m => m.Value)
                 .ToList()
-                .ForEach(contact =>
+                .ForEach(exContact =>
                 {
-                    contact.MyLastReadWrithe = DateTime.Now;
-                    contact.ToDoStatus = Status.Removed;
-                    contact.AllComputers[externFile.MyPosition].Status = Status.Removed;
+                    exContact.MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.Removed);
+                    exContact.AllComputers[exContact.MyStatus.Id] = exContact.MyStatus;
                 });
 
             // Update Entry
@@ -237,10 +247,9 @@ namespace PhonerLiteSync
                 {
                     exContact.Name = locContact.Name;
                     exContact.Comment = locContact.Comment;
-                    exContact.ToDoStatus = Status.Edited;
-                    exContact.MyLastReadWrithe = DateTime.Now;
-                    exContact.AllComputers.ToList().ForEach(m => m.Status = Status.UpToDate);
-                }
+                    exContact.MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.Edited);
+                    exContact.AllComputers[exContact.MyStatus.Id] = exContact.MyStatus;
+                } 
             }
 
             return externFile;
@@ -264,7 +273,8 @@ namespace PhonerLiteSync
 
             // Writhe Contacts
             externFile.Addresses.Values.ToList().ForEach(m =>
-                csv.AppendLine(m.ToExternString(externFile.MyPosition, DateTimeFormat)));
+                csv.AppendLine(m.ToExternString(externFile.MyId, DateTimeFormat)));
+
 
             // Writhe to file
             WriteToFile(_externPath, csv.ToString());

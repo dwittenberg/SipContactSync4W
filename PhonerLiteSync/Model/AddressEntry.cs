@@ -30,7 +30,7 @@ namespace PhonerLiteSync.Model
 
         public AddressEntry(string[] fields, PhonebookStruct exFile)
         {
-            if (fields.Length != 4 + exFile.Devices.Length)
+            if (fields.Length != 4 + exFile.Devices.Length && fields.Length != 4 + exFile.Devices.Length - 1)
             {
                 Console.WriteLine("Length not ok");
                 return;
@@ -43,7 +43,11 @@ namespace PhonerLiteSync.Model
                 Comment = fields[3];
 
                 AllComputers = fields[Range.StartAt(4)].Select(m => new ComputerStatus(m)).ToArray();
-                MyStatus = AllComputers[exFile.MyPosition];
+                if (AllComputers.Length == exFile.MyId)
+                {
+                    AllComputers = AllComputers.Append(new ComputerStatus(exFile.MyId, DateTime.MinValue, Status.NewEntry)).ToArray();
+                }
+                MyStatus = AllComputers[exFile.MyId];
 
                 var changerList = AllComputers.Where(m => m.Status != Status.UpToDate).ToList();
 
@@ -67,7 +71,7 @@ namespace PhonerLiteSync.Model
 
         public ComputerStatus LastChanger { get; set; }
         public ComputerStatus MyStatus { get; set; }
-        
+
         public sealed override string ToString()
             => $"{Name} - {Number} - {Comment} - {LastChanger} - {MyStatus}";
 
@@ -79,23 +83,20 @@ namespace PhonerLiteSync.Model
 
         public string ToExternString(int myPosition, string dateTimeFormatter)
         {
+
             if (AllComputers.Count(m => m.Status == Status.Removed) == AllComputers.Length)
             {
                 return "";
             }
 
-
-            if (AllComputers.Count(m => m.LastChange < ToDoLastChange) == 0 && AllComputers.Count(m => m.Status != Status.UpToDate) != 0)
+            // All PC are newer than last Change && there is a change
+            if (AllComputers.Count(m => LastChanger == null || m.LastChange < LastChanger.LastChange) == 0 && AllComputers.Count(m => m.Status != Status.UpToDate) != 0)
             {
-                AllComputers.Where(m => m.LastChange == ToDoLastChange).ToList().ForEach(m => m.Status = Status.UpToDate);
+                // Set Changer UpToDate
+                AllComputers.Where(m => m.LastChange == LastChanger.LastChange).ToList().ForEach(m => m.Status = Status.UpToDate);
             }
 
-            var endString = $"{Number};{Name};;{Comment};";
-            for (int i = 0; i < AllComputers.Length; i++)
-            {
-                endString += $"{AllComputers[i]};";
-            }
-
+            var endString = AllComputers.Aggregate($"{Number};{Name};;{Comment};", (current, t) => current + $"{t};");
             return endString.Substring(0, endString.Length - 1);
         }
     }
