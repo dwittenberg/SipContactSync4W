@@ -20,7 +20,9 @@ namespace PhonerLiteSync.Model
             Id = int.Parse(name[0].ToString());
             Name = name.Substring(1);
         }
+
         public int Id { get; set; }
+       
         public string Name { get; set; }
 
         public override string ToString()

@@ -47,6 +47,7 @@ namespace PhonerLiteSync.Model
                 {
                     AllComputers = AllComputers.Append(new ComputerStatus(exFile.MyId, DateTime.MinValue, Status.NewEntry)).ToArray();
                 }
+
                 MyStatus = AllComputers[exFile.MyId];
 
                 var changerList = AllComputers.Where(m => m.Status != Status.UpToDate).ToList();
@@ -83,10 +84,9 @@ namespace PhonerLiteSync.Model
 
         public string ToExternString(int myPosition, string dateTimeFormatter)
         {
-
             if (AllComputers.Count(m => m.Status == Status.Removed) == AllComputers.Length)
             {
-                return "";
+                return string.Empty;
             }
 
             // All PC are newer than last Change && there is a change

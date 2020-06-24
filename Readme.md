@@ -1,16 +1,15 @@
 # Beschreibung
-Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf einem beliebigen Pfad. Vorzugsweise Onedrive (o.ä.) oder ein Netzwerklaufwerk. 
+Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf einem beliebigen Pfad. Vorzugsweise Onedrive (o.ä.) oder ein Netzwerklaufwerk. Der Sync wird momentan vom Nutzer händisch angestoßen.
 
 Achtung: PhonerLite speichert seine CSV nur, wenn es geschlossen wird und ließt die
 CSV wenn es geöffnet wird. Daher bitte PhonerLite schließen, bevor der Sync ausgeführt wird.
 
-Achtung: Der Pfad für das externe Laufwerk kann aktuell noch nicht angepasst werden!
-
 ## Ablauf:
-1. Extern und Intern werden geladen.
-2. Suche nach markierten Änderungen auf Extern und Übertragung dieser auf Intern.
-3. Vergleich von Intern mit Extern. Änderungen werden in Extern gespeichert.
-4. Speichern der neuen CSV.
+1. Die Konfiguration wird geladen.
+2. Extern und Intern werden geladen.
+3. Suche nach markierten Änderungen auf Extern und Übertragung dieser auf Intern.
+4. Vergleich von Intern mit Extern. Änderungen werden in Extern gespeichert.
+5. Speichern der neuen CSV.
 
 ## Sonderfälle - Programmverhalten
 ### Konflikte
@@ -20,6 +19,11 @@ Wird an 2 Geräten eine Änderung am Eintrag vorgenommen, bleibt der Eintrag erh
 Die Datenbank am Netzwerklaufwerk wird gelesen. Danach wird das eigene Gerät der Geräteliste hinzugefügt und der Status für jeden Eintrag intern auf Neu gesetzt. Nachdem alles gelesen wurde, steht der Status auf UpToDate.
 
 ## Allgemeines Programmverhalten
+### Konfiguraion
+Die Konfiguration wird als JSON unter AppData abgelegt. Der vollständige Pfad ist: %AppData%\PhonerLiteContactSync\Settings.json
+
+Ist keine vorhanden werden Standardwerte angezeigt die bearbeitet werden können. Beim Ausführen des Sync werden die Settings gespeichert.
+
 ### Neuer Eintrag:
 Der erstellende PC fügt den Eintrag in zu Extern hinzu und markiert seinen Status mit +. Wenn alle Geräte das übernommen haben wird das + entfernt.
 

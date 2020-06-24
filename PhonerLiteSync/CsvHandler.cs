@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,28 +10,34 @@ namespace PhonerLiteSync
 {
     public class CsvHandler
     {
-        private PhonebookStruct _externFile;
-        private Dictionary<string, AddressEntry> _localFile = new Dictionary<string, AddressEntry>();
-        public static string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-        private string _localPath;
-        private string _externPath;
+        public static readonly string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
 
-        public void run()
+        public static readonly string SavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\PhonerLiteContactSync\Settings.json";
+
+        private string localPath;
+
+        private string externPath;
+
+        private PhonebookStruct externFile;
+
+        private Dictionary<string, AddressEntry> localFile = new Dictionary<string, AddressEntry>();
+
+        public void run(string local, string ext)
         {
-            _localPath = Environment.ExpandEnvironmentVariables(@"%APPDATA%\PhonerLite\phonebook.csv");
-            _externPath = Environment.ExpandEnvironmentVariables(@"C:\Users\dowi\OneDrive\ArrowBackup\PhonerLite\phonebook.csv");
+            localPath = local;
+            externPath = ext;
 
             Console.WriteLine("Read Files");
-            _externFile = ReadExternalCsv(_externPath);
-            _localFile = ReadLocalCsv(_localPath);
+            externFile = ReadExternalCsv(this.externPath);
+            localFile = ReadLocalCsv(this.localPath);
 
             Console.WriteLine("Run Update");
-            _localFile = UpdateLocal(_externFile, _localFile);
-            _externFile = UpdateExternal(_localFile, _externFile);
+            localFile = UpdateLocal(externFile, localFile);
+            externFile = UpdateExternal(localFile, externFile);
 
             Console.WriteLine("Write Files");
-            WriteExternal(_externFile);
-            WriteLocal(_localFile);
+            WriteExternal(externFile);
+            WriteLocal(localFile);
         }
 
         private static Dictionary<string, AddressEntry> ReadLocalCsv(string path)
@@ -73,7 +78,7 @@ namespace PhonerLiteSync
                 return result;
             }
 
-            using TextFieldParser parser = new TextFieldParser(path);
+            TextFieldParser parser = new TextFieldParser(path);
             parser.TextFieldType = FieldType.Delimited;
             parser.SetDelimiters(";");
 
@@ -86,6 +91,7 @@ namespace PhonerLiteSync
                 {
                     result.Devices = result.Devices.Append(new Computer(result.MyId + Environment.MachineName)).ToArray();
                 }
+
                 result.Addresses = new Dictionary<string, AddressEntry>();
             }
 
@@ -117,14 +123,14 @@ namespace PhonerLiteSync
             var myName = Environment.MachineName;
             for (i = 0; i < fields.Length; i++)
             {
-                if (fields[i] == (i-1) + myName)
+                if (fields[i] == (i - 1) + myName)
                 {
                     return i - 1;
                 }
             }
 
             // His computer read syc file first time
-            return i-1;
+            return i - 1;
         }
 
         private static Dictionary<string, AddressEntry> UpdateLocal(PhonebookStruct externFile, Dictionary<string, AddressEntry> localFile)
@@ -209,7 +215,7 @@ namespace PhonerLiteSync
                                 Name = m.Name,
                                 Comment = m.Comment,
                                 MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.NewEntry),
-                                AllComputers = new ComputerStatus[1]{new ComputerStatus(0,DateTime.Now, Status.UpToDate)}, // ToDo Check
+                                AllComputers = new ComputerStatus[1] { new ComputerStatus(0, DateTime.Now, Status.UpToDate) }, // ToDo Check
                             }));
 
                 return externFile;
@@ -249,7 +255,7 @@ namespace PhonerLiteSync
                     exContact.Comment = locContact.Comment;
                     exContact.MyStatus = new ComputerStatus(externFile.MyId, DateTime.Now, Status.Edited);
                     exContact.AllComputers[exContact.MyStatus.Id] = exContact.MyStatus;
-                } 
+                }
             }
 
             return externFile;
@@ -259,7 +265,7 @@ namespace PhonerLiteSync
         {
             var csv = new StringBuilder();
             localFile.Values.ToList().ForEach(m => csv.AppendLine(m.ToLocalString()));
-            WriteToFile(_localPath, csv.ToString());
+            WriteToFile(localPath, csv.ToString());
         }
 
         private void WriteExternal(PhonebookStruct externFile)
@@ -275,9 +281,8 @@ namespace PhonerLiteSync
             externFile.Addresses.Values.ToList().ForEach(m =>
                 csv.AppendLine(m.ToExternString(externFile.MyId, DateTimeFormat)));
 
-
             // Writhe to file
-            WriteToFile(_externPath, csv.ToString());
+            WriteToFile(externPath, csv.ToString());
         }
 
         private void WriteToFile(string path, string contents)
