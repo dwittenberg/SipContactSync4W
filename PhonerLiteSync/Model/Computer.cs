@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PhonerLiteSync.Model
+﻿namespace PhonerLiteSync.Model
 {
     public class Computer
     {

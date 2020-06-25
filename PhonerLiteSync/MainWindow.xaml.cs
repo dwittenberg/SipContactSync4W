@@ -1,19 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using Microsoft.Win32;
 
@@ -26,29 +13,45 @@ namespace PhonerLiteSync
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly PathGui settings = new PathGui();
+        private Settings settings = new Settings();
 
         public MainWindow()
         {
-            InitializeComponent();
+            InitializeComponent(); 
+            string[] args = App.Args;  
+            
+            Start(args != null);
+        }
 
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var userData = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
+        private void Start(bool automaticStart)
+        {
             var helper = new Helper();
-            var load = helper.LoadSettings();
+            settings = helper.LoadSettings();
 
-            settings.LocalPath = load != null ? load.LocalPath : Environment.ExpandEnvironmentVariables(appData + @"\PhonerLite\phonebook.csv");
-            settings.ExternPath = load != null ? load.ExternPath : Environment.ExpandEnvironmentVariables(userData + @"\OneDrive\PhonerLite\phonebook.csv");
+            var timeSinceLastRestart = DateTime.Now - settings.LastRestart;
+            if (timeSinceLastRestart.TotalMinutes < settings.WaitingTime && automaticStart)
+            {
+                this.Close();
+                return;
+            }
 
             DataContext = settings;
             UpdateGui();
+
+            if (automaticStart && StartSync())
+            {
+                this.Close();
+            }
         }
 
         private void StartSync(object sender, RoutedEventArgs e)
         {
             UpdateGui();
+            StartSync();
+        }
 
+        private bool StartSync()
+        {
             if (settings.AllOk)
             {
                 var helper = new Helper();
@@ -56,13 +59,20 @@ namespace PhonerLiteSync
 
                 var handler = new CsvHandler();
                 handler.run(settings.LocalPath, settings.ExternPath);
+                btnRun.Content = "Sync - Finished";
+                btnRun.Background = Brushes.DarkSeaGreen;
+                return true;
             }
+
+            return false;
         }
 
         private void UpdateGui()
         {
             tbDestination.BorderBrush = settings.ExternPathOk ? Brushes.Gray : Brushes.Crimson;
+            tbDestination.BorderThickness = new Thickness(settings.ExternPathOk ? 1 : 2);
             tbSoure.BorderBrush = settings.LocalPathOk ? Brushes.Gray : Brushes.Crimson;
+            tbSoure.BorderThickness = new Thickness(settings.LocalPathOk ? 1 : 2);
         }
 
         private void btnSource_Click(object sender, RoutedEventArgs e)

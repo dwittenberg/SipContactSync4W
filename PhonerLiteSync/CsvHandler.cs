@@ -24,12 +24,14 @@ namespace PhonerLiteSync
 
         public void run(string local, string ext)
         {
+            var phonerPath = Helper.KillPhoner();
+
             localPath = local;
             externPath = ext;
 
             Console.WriteLine("Read Files");
-            externFile = ReadExternalCsv(this.externPath);
-            localFile = ReadLocalCsv(this.localPath);
+            externFile = ReadExternalCsv(externPath);
+            localFile = ReadLocalCsv(localPath);
 
             Console.WriteLine("Run Update");
             localFile = UpdateLocal(externFile, localFile);
@@ -38,6 +40,8 @@ namespace PhonerLiteSync
             Console.WriteLine("Write Files");
             WriteExternal(externFile);
             WriteLocal(localFile);
+
+            Helper.RunPhonerLite(phonerPath);
         }
 
         private static Dictionary<string, AddressEntry> ReadLocalCsv(string path)
@@ -48,22 +52,23 @@ namespace PhonerLiteSync
                 return result;
             }
 
-            using (TextFieldParser parser = new TextFieldParser(path))
+            TextFieldParser parser = new TextFieldParser(path)
             {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(";");
+                TextFieldType = FieldType.Delimited
+            };
 
-                while (!parser.EndOfData)
+            parser.SetDelimiters(";");
+
+            while (!parser.EndOfData)
+            {
+                //Process row
+                string[] fields = parser.ReadFields();
+
+                var entry = new AddressEntry(fields);
+
+                if (!string.IsNullOrEmpty(entry.Number))
                 {
-                    //Process row
-                    string[] fields = parser.ReadFields();
-
-                    var entry = new AddressEntry(fields);
-
-                    if (!string.IsNullOrEmpty(entry.Number))
-                    {
-                        result.Add(entry.Number, entry);
-                    }
+                    result.Add(entry.Number, entry);
                 }
             }
 
@@ -78,8 +83,11 @@ namespace PhonerLiteSync
                 return result;
             }
 
-            TextFieldParser parser = new TextFieldParser(path);
-            parser.TextFieldType = FieldType.Delimited;
+            TextFieldParser parser = new TextFieldParser(path)
+            {
+                TextFieldType = FieldType.Delimited
+            };
+
             parser.SetDelimiters(";");
 
             if (!parser.EndOfData)
@@ -140,7 +148,11 @@ namespace PhonerLiteSync
                 return localFile;
             }
 
-            var listOfChanges = externFile.Addresses.Values.Where(m => m.LastChanger != null && m.LastChanger.Status != Status.UpToDate && m.LastChanger.Id != externFile.MyId || m.MyStatus.Status == Status.NewEntry).ToList();
+            var listOfChanges = externFile.Addresses.Values.Where(m => 
+                (m.LastChanger != null 
+                && m.LastChanger.Status != Status.UpToDate 
+                && m.LastChanger.Id != externFile.MyId)
+                || m.MyStatus.Status == Status.NewEntry).ToList();
 
             foreach (var exEntry in listOfChanges)
             {

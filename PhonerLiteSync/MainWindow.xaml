@@ -17,6 +17,6 @@
         <Button Name="btnDestination"  Content="..." Margin="0,111,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="btnDestination_Click"/>
         <Label Content="Sync PhonerLite Contacts with a Newtwork File" HorizontalAlignment="Left" Margin="45,7,0,0" VerticalAlignment="Top" FontWeight="Bold" FontSize="20"/>
 
-        <Button Content="Run" Margin="42,163,55,0" VerticalAlignment="Top" Click="StartSync" Height="31"/>
+        <Button Name="btnRun" Content="Run" Margin="42,163,55,0" VerticalAlignment="Top" Click="StartSync" Height="31"/>
     </Grid>
 </Window>
