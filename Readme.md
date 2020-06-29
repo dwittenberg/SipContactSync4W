@@ -3,7 +3,7 @@ Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf eine
 
 Achtung: PhonerLite speichert seine CSV nur, wenn es geschlossen wird und ließt die
 CSV wenn es geöffnet wird. Daher bitte PhonerLite schließen, bevor der Sync ausgeführt wird.
-
+## Hinweis: Diese Software ist im Beta Status
 ## Ablauf:
 1. Die Konfiguration wird geladen.
 2. Extern und Intern werden geladen.
