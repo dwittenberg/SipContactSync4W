@@ -28,7 +28,7 @@ namespace PhonerLiteSync.Model
             }
         }
 
-        public AddressEntry(string[] fields, PhonebookStruct exFile)
+        public AddressEntry(string[] fields, PhoneBook exFile)
         {
             if (fields.Length != 4 + exFile.Devices.Length && fields.Length != 4 + exFile.Devices.Length - 1)
             {
@@ -68,6 +68,7 @@ namespace PhonerLiteSync.Model
         public string Name { get; set; }
         public string Number { get; set; }
         public string Comment { get; set; }
+
         public ComputerStatus[] AllComputers { get; set; }
 
         public ComputerStatus LastChanger { get; set; }

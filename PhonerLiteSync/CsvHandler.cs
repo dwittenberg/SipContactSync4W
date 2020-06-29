@@ -11,36 +11,28 @@ namespace PhonerLiteSync
     public class CsvHandler
     {
         public static readonly string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-
         public static readonly string SavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\PhonerLiteContactSync\Settings.json";
 
-        private string localPath;
 
-        private string externPath;
-
-        private PhonebookStruct externFile;
-
-        private Dictionary<string, AddressEntry> localFile = new Dictionary<string, AddressEntry>();
-
-        public void run(string local, string ext)
+        public void Run(string localPath, string externPath)
         {
+            Console.WriteLine("Stop Phoner");
             var phonerPath = Helper.KillPhoner();
 
-            localPath = local;
-            externPath = ext;
-
             Console.WriteLine("Read Files");
-            externFile = ReadExternalCsv(externPath);
-            localFile = ReadLocalCsv(localPath);
+            var externFile = IOHandler.LoadExternPhoneBook(externPath);
+            var localFile = ReadLocalCsv(localPath);
 
             Console.WriteLine("Run Update");
             localFile = UpdateLocal(externFile, localFile);
             externFile = UpdateExternal(localFile, externFile);
 
             Console.WriteLine("Write Files");
-            WriteExternal(externFile);
-            WriteLocal(localFile);
+            IOHandler.SaveExternPhoneBook(externFile, externPath);
+            WriteLocalCsv(localFile, localPath);
 
+
+            Console.WriteLine("Start Phoner");
             Helper.RunPhonerLite(phonerPath);
         }
 
@@ -75,82 +67,16 @@ namespace PhonerLiteSync
             return result;
         }
 
-        private static PhonebookStruct ReadExternalCsv(string path)
-        {
-            var result = new PhonebookStruct();
-            if (!File.Exists(path))
-            {
-                return result;
-            }
-
-            TextFieldParser parser = new TextFieldParser(path)
-            {
-                TextFieldType = FieldType.Delimited
-            };
-
-            parser.SetDelimiters(";");
-
-            if (!parser.EndOfData)
-            {
-                var headline = parser.ReadFields();
-                result.MyId = ReadHeadLine(headline);
-                result.Devices = headline.Where(m => m != "#").Select(m => new Computer(m)).ToArray();
-                if (result.Devices.Length == result.MyId)
-                {
-                    result.Devices = result.Devices.Append(new Computer(result.MyId + Environment.MachineName)).ToArray();
-                }
-
-                result.Addresses = new Dictionary<string, AddressEntry>();
-            }
-
-            while (!parser.EndOfData)
-            {
-                //Process row
-                string[] fields = parser.ReadFields();
-
-                var entry = new AddressEntry(fields, result);
-
-                if (!string.IsNullOrEmpty(entry.Number))
-                {
-                    result.Addresses.Add(entry.Number, entry);
-                }
-            }
-
-            return result;
-        }
-
-        private static int ReadHeadLine(string[] fields)
-        {
-            int i = -1;
-            if (fields[0] != "#")
-            {
-                // No Correct Headline
-                return i;
-            }
-
-            var myName = Environment.MachineName;
-            for (i = 0; i < fields.Length; i++)
-            {
-                if (fields[i] == (i - 1) + myName)
-                {
-                    return i - 1;
-                }
-            }
-
-            // His computer read syc file first time
-            return i - 1;
-        }
-
-        private static Dictionary<string, AddressEntry> UpdateLocal(PhonebookStruct externFile, Dictionary<string, AddressEntry> localFile)
+        private static Dictionary<string, AddressEntry> UpdateLocal(PhoneBook externFile, Dictionary<string, AddressEntry> localFile)
         {
             if (externFile.Addresses == null)
             {
                 return localFile;
             }
 
-            var listOfChanges = externFile.Addresses.Values.Where(m => 
-                (m.LastChanger != null 
-                && m.LastChanger.Status != Status.UpToDate 
+            var listOfChanges = externFile.Addresses.Values.Where(m =>
+                (m.LastChanger != null
+                && m.LastChanger.Status != Status.UpToDate
                 && m.LastChanger.Id != externFile.MyId)
                 || m.MyStatus.Status == Status.NewEntry).ToList();
 
@@ -203,14 +129,14 @@ namespace PhonerLiteSync
             return localFile;
         }
 
-        private PhonebookStruct UpdateExternal(Dictionary<string, AddressEntry> localFile, PhonebookStruct externFile)
+        private static PhoneBook UpdateExternal(Dictionary<string, AddressEntry> localFile, PhoneBook externFile)
         {
             // Create new, when not exist
             if (externFile.Addresses == null)
             {
                 var pcName = Environment.MachineName;
                 Computer[] array = { new Computer { Id = 0, Name = pcName }, };
-                externFile = new PhonebookStruct
+                externFile = new PhoneBook
                 {
                     Addresses = new Dictionary<string, AddressEntry>(),
                     Devices = array,
@@ -273,40 +199,12 @@ namespace PhonerLiteSync
             return externFile;
         }
 
-        private void WriteLocal(Dictionary<string, AddressEntry> localFile)
+        private static void WriteLocalCsv(Dictionary<string, AddressEntry> localFile, string path)
         {
             var csv = new StringBuilder();
             localFile.Values.ToList().ForEach(m => csv.AppendLine(m.ToLocalString()));
-            WriteToFile(localPath, csv.ToString());
-        }
 
-        private void WriteExternal(PhonebookStruct externFile)
-        {
-            var csv = new StringBuilder();
-
-            // Writhe Headline
-            var headline = "#;";
-            externFile.Devices.ToList().ForEach(m => headline += m + ";");
-            csv.AppendLine(headline.Substring(0, headline.Length - 1));
-
-            // Writhe Contacts
-            externFile.Addresses.Values.ToList().ForEach(m =>
-                csv.AppendLine(m.ToExternString(externFile.MyId, DateTimeFormat)));
-
-            // Writhe to file
-            WriteToFile(externPath, csv.ToString());
-        }
-
-        private void WriteToFile(string path, string contents)
-        {
-            var file = new FileInfo(path);
-
-            if (!Directory.Exists(file.Directory.FullName))
-            {
-                Directory.CreateDirectory(file.Directory.FullName);
-            }
-
-            File.WriteAllText(path, contents);
+            IOHandler.WriteToFile(path, csv.ToString());
         }
     }
 }

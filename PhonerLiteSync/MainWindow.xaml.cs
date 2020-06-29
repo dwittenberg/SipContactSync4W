@@ -13,18 +13,14 @@ namespace PhonerLiteSync
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Settings settings = new Settings();
+        public Settings settings = new Settings();
 
         public MainWindow()
         {
             InitializeComponent(); 
-            string[] args = App.Args;  
-            
-            Start(args != null);
-        }
+            string[] args = App.Args;
+            var automaticStart = args != null;
 
-        private void Start(bool automaticStart)
-        {
             var helper = new Helper();
             settings = helper.LoadSettings();
 
@@ -58,7 +54,7 @@ namespace PhonerLiteSync
                 helper.SaveSettings(settings);
 
                 var handler = new CsvHandler();
-                handler.run(settings.LocalPath, settings.ExternPath);
+                handler.Run(settings.LocalPath, settings.ExternPath);
                 btnRun.Content = "Sync - Finished";
                 btnRun.Background = Brushes.DarkSeaGreen;
                 return true;
@@ -80,6 +76,12 @@ namespace PhonerLiteSync
             settings.LocalPath = ShowMyDialog(settings.LocalPath);
             UpdateGui();
         }
+        
+        private void btnDestination_Click(object sender, RoutedEventArgs e)
+        {
+            settings.ExternPath = ShowMyDialog(settings.ExternPath);
+            UpdateGui();
+        }
 
         private string ShowMyDialog(string path)
         {
@@ -92,12 +94,6 @@ namespace PhonerLiteSync
             }
 
             return string.Empty;
-        }
-
-        private void btnDestination_Click(object sender, RoutedEventArgs e)
-        {
-            settings.ExternPath = ShowMyDialog(settings.LocalPath);
-            UpdateGui();
         }
     }
 }

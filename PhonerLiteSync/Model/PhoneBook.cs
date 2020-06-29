@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using PhonerLiteSync.Model;
 
 namespace PhonerLiteSync
 {
-    public class PhonebookStruct
+    public class PhoneBook
     {
+
+        public PhoneBook()
+        {
+            Version = "PhoneBook by DW 1.0";
+        }
+
+        public string Version { get; set; }
         public int MyId { get; set; }
         public Computer[] Devices { get; set; }
 
