@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 
 namespace PhonerLiteSync.Model
 {
@@ -16,6 +17,16 @@ namespace PhonerLiteSync.Model
             
             WaitingTime = 30;
             LastRestart = DateTime.MinValue;
+        }
+
+        public Settings(string path)
+        {
+            var jsonString = File.ReadAllText(path);
+            var s = JsonSerializer.Deserialize<Settings>(jsonString);
+            LocalPath = s.LocalPath;
+            ExternPath = s.ExternPath;
+            WaitingTime = s.WaitingTime;
+            LastRestart = s.LastRestart;
         }
 
         private string l;
@@ -74,5 +85,11 @@ namespace PhonerLiteSync.Model
 
         // WaitingTime in minutes
         public int WaitingTime { get; set; }
+
+        public string ToJson()
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            return JsonSerializer.Serialize(this, options);
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace PhonerLiteSync
 {
     public static class IOHandler
     {
-        public static void SaveSettings(Settings settings)
+        public static void SaveSettings(Settings settings, string path)
         {
             try
             {
@@ -20,7 +20,7 @@ namespace PhonerLiteSync
                 JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
                 var jsonString = JsonSerializer.Serialize(settings, options);
 
-                WriteToFile(CsvHandler.SavePath, jsonString);
+                WriteToFile(path, jsonString);
             }
             catch
             {
@@ -28,11 +28,11 @@ namespace PhonerLiteSync
             }
         }
 
-        public static Settings LoadSettings()
+        public static Settings LoadSettings(string path)
         {
             try
             {
-                var jsonString = File.ReadAllText(CsvHandler.SavePath);
+                var jsonString = File.ReadAllText(path);
                 return JsonSerializer.Deserialize<Settings>(jsonString);
             }
             catch
@@ -46,11 +46,7 @@ namespace PhonerLiteSync
             try
             {
                 pb.MyId = -1;
-
-                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
-                var jsonString = JsonSerializer.Serialize(pb, options);
-
-                WriteToFile(path, jsonString);
+                WriteToFile(path, pb.ToJson());
             }
             catch
             {
@@ -69,7 +65,7 @@ namespace PhonerLiteSync
 
                return pb;
             }
-            catch
+            catch (Exception e)
             {
                 return new PhoneBook();
             }

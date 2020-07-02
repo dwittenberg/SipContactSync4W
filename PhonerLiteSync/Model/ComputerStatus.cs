@@ -5,6 +5,8 @@ namespace PhonerLiteSync.Model
 {
     public class ComputerStatus
     {
+        public ComputerStatus(){}
+
         public ComputerStatus(string m)
         {
             Id = int.Parse(m[0].ToString());

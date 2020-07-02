@@ -82,23 +82,5 @@ namespace PhonerLiteSync.Model
 
         public string ToLocalString()
             => $"{Number};{Name};;{Comment}";
-
-        public string ToExternString(int myPosition, string dateTimeFormatter)
-        {
-            if (AllComputers.Count(m => m.Status == Status.Removed) == AllComputers.Length)
-            {
-                return string.Empty;
-            }
-
-            // All PC are newer than last Change && there is a change
-            if (AllComputers.Count(m => LastChanger == null || m.LastChange < LastChanger.LastChange) == 0 && AllComputers.Count(m => m.Status != Status.UpToDate) != 0)
-            {
-                // Set Changer UpToDate
-                AllComputers.Where(m => m.LastChange == LastChanger.LastChange).ToList().ForEach(m => m.Status = Status.UpToDate);
-            }
-
-            var endString = AllComputers.Aggregate($"{Number};{Name};;{Comment};", (current, t) => current + $"{t};");
-            return endString.Substring(0, endString.Length - 1);
-        }
     }
 }
