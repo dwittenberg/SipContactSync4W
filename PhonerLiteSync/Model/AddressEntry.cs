@@ -28,43 +28,6 @@ namespace PhonerLiteSync.Model
             }
         }
 
-        public AddressEntry(string[] fields, PhoneBook exFile)
-        {
-            if (fields.Length != 4 + exFile.Devices.Length && fields.Length != 4 + exFile.Devices.Length - 1)
-            {
-                Console.WriteLine("Length not ok");
-                return;
-            }
-
-            try
-            {
-                Number = fields[0];
-                Name = fields[1];
-                Comment = fields[3];
-
-                AllComputers = fields[Range.StartAt(4)].Select(m => new ComputerStatus(m)).ToArray();
-                if (AllComputers.Length == exFile.MyId)
-                {
-                    AllComputers = AllComputers.Append(new ComputerStatus(exFile.MyId, DateTime.MinValue, Status.NewEntry)).ToArray();
-                }
-
-                MyStatus = AllComputers[exFile.MyId];
-
-                var changerList = AllComputers.Where(m => m.Status != Status.UpToDate).ToList();
-
-                if (changerList.Count > 0)
-                {
-                    LastChanger = changerList.OrderBy(m => m.LastChange).First();
-                }
-
-                Console.WriteLine(this.ToString());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
-
         public string Name { get; set; }
         public string Number { get; set; }
         public string Comment { get; set; }

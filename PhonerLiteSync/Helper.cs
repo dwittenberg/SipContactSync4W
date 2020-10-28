@@ -10,42 +10,6 @@ namespace PhonerLiteSync
 {
     public class Helper
     {
-        public void SaveSettings(Settings settings)
-        {
-            try
-            {
-                settings.LastRestart = DateTime.Now;
-                   
-                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
-                string jsonString = JsonSerializer.Serialize<Settings>(settings, options);
-
-                var file = new FileInfo(CsvHandler.SavePath);
-                if (!Directory.Exists(file.DirectoryName))
-                {
-                    Directory.CreateDirectory(file.DirectoryName);
-                }
-
-                File.WriteAllText(CsvHandler.SavePath, jsonString);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
-        public Settings LoadSettings()
-        {
-            try
-            {
-                var jsonString = File.ReadAllText(CsvHandler.SavePath);
-                return JsonSerializer.Deserialize<Settings>(jsonString);
-            }
-            catch
-            {
-                return new Settings();
-            }
-        }
-
         public static string KillPhoner()
         {
             // Store all running process in the system
@@ -58,11 +22,21 @@ namespace PhonerLiteSync
                     // kill  running process
                     var p = runingProcess[i];
                     var path = p.MainModule.FileName;
-                    p.Kill();
+                    //p.CloseMainWindow();
+
+
+
+
+                    Process.Start("CMD.exe", "taskkill /IM \"PhonerLite.exe\"");
+
+
+
+                    //p.Close();
                     while (!p.HasExited)
                     {
-                        Thread.Sleep(1000);
+                        Thread.Sleep(300);
                     }
+
 
                     return path;
                 }

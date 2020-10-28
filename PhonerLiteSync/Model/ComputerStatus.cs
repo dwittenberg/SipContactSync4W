@@ -7,30 +7,6 @@ namespace PhonerLiteSync.Model
     {
         public ComputerStatus(){}
 
-        public ComputerStatus(string m)
-        {
-            Id = int.Parse(m[0].ToString());
-
-            LastChange = DateTime.ParseExact(
-                m.Substring(1, CsvHandler.DateTimeFormat.Length),
-                CsvHandler.DateTimeFormat,
-                CultureInfo.InvariantCulture);
-
-            if (m.Length == CsvHandler.DateTimeFormat.Length + 1)
-            {
-                Status = Status.UpToDate;
-                return;
-            }
-
-            Status = m[CsvHandler.DateTimeFormat.Length + 1] switch
-            {
-                '+' => Status.NewEntry,
-                '*' => Status.Edited,
-                '-' => Status.Removed,
-                _ => Status.Undefined,
-            };
-        }
-
         public ComputerStatus(int id, DateTime lastChange, Status status)
         {
             Id = id;

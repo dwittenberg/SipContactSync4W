@@ -12,9 +12,6 @@ namespace PhonerLiteSync.Model
             var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             LocalPath = Environment.ExpandEnvironmentVariables(appData + @"\PhonerLite\phonebook.csv");
 
-            var userData = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            ExternPath = Environment.ExpandEnvironmentVariables(userData + @"\OneDrive\PhonerLite\phonebook.csv");
-            
             WaitingTime = 30;
             LastRestart = DateTime.MinValue;
         }

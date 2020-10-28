@@ -48,7 +48,7 @@ namespace Tests
             var phoneBook = new PhoneBook
             {
                 Addresses = addressDictionary,
-                Devices = deviceArray,
+                Computers = deviceArray,
                 MyId = 0,
             };
 
@@ -82,7 +82,7 @@ namespace Tests
         //{
         //    "Version": "PhoneBook by DW 1.0",
         //    "MyId": -1,
-        //    "Devices": [
+        //    "Computers": [
         //    {
         //        "Id": 0,
         //        "Name": "WERKBANK"

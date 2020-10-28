@@ -22,7 +22,7 @@ namespace PhonerLiteSync
             var automaticStart = args != null;
 
             var helper = new Helper();
-            settings = helper.LoadSettings();
+            settings = IOHandler.LoadSettings(CsvHandler.SavePath);
 
             var timeSinceLastRestart = DateTime.Now - settings.LastRestart;
             if (timeSinceLastRestart.TotalMinutes < settings.WaitingTime && automaticStart)
@@ -51,7 +51,7 @@ namespace PhonerLiteSync
             if (settings.AllOk)
             {
                 var helper = new Helper();
-                helper.SaveSettings(settings);
+                IOHandler.SaveSettings(settings, CsvHandler.SavePath);
 
                 var handler = new CsvHandler();
                 handler.Run(settings.LocalPath, settings.ExternPath);
@@ -67,26 +67,37 @@ namespace PhonerLiteSync
         {
             tbDestination.BorderBrush = settings.ExternPathOk ? Brushes.Gray : Brushes.Crimson;
             tbDestination.BorderThickness = new Thickness(settings.ExternPathOk ? 1 : 2);
+            tbDestination.Text = settings.ExternPath;
             tbSoure.BorderBrush = settings.LocalPathOk ? Brushes.Gray : Brushes.Crimson;
             tbSoure.BorderThickness = new Thickness(settings.LocalPathOk ? 1 : 2);
+            tbSoure.Text = settings.LocalPath;
         }
 
         private void btnSource_Click(object sender, RoutedEventArgs e)
         {
-            settings.LocalPath = ShowMyDialog(settings.LocalPath);
+            settings.LocalPath = ShowMyDialog(settings.LocalPath, "csv");
             UpdateGui();
         }
         
         private void btnDestination_Click(object sender, RoutedEventArgs e)
         {
-            settings.ExternPath = ShowMyDialog(settings.ExternPath);
+            settings.ExternPath = ShowMyDialog(settings.ExternPath, "json");
             UpdateGui();
         }
 
-        private string ShowMyDialog(string path)
+        private string ShowMyDialog(string path, string type)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "CSV Files (*.csv)|*.csv|All files (*.*)|*.*";
+            switch (type)
+            {
+                case "csv":
+                    openFileDialog.Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*";
+                    break;
+                case "json":
+                    openFileDialog.Filter = "JSON File (*.json)|*.json|All files (*.*)|*.*";
+                    break;
+            }
+       
             openFileDialog.InitialDirectory = path;
             if (openFileDialog.ShowDialog() == true)
             {
