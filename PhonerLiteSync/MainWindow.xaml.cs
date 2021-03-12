@@ -13,25 +13,29 @@ namespace PhonerLiteSync
     /// </summary>
     public partial class MainWindow : Window
     {
-        public Settings settings = new Settings();
+        public Settings Settings;
 
         public MainWindow()
         {
             InitializeComponent(); 
-            string[] args = App.Args;
+
+            var args = App.Args;
+#if RELEASE
             var automaticStart = args != null;
+#else
+            var automaticStart = false;// args != null;
+#endif
+            
+            Settings = IoHandler.LoadSettings(CsvHandler.SettingsPath);
 
-            var helper = new Helper();
-            settings = IOHandler.LoadSettings(CsvHandler.SavePath);
-
-            var timeSinceLastRestart = DateTime.Now - settings.LastRestart;
-            if (timeSinceLastRestart.TotalMinutes < settings.WaitingTime && automaticStart)
+            var timeSinceLastRestart = DateTime.Now - Settings.LastRestart;
+            if (timeSinceLastRestart.TotalMinutes < Settings.WaitingTime && automaticStart)
             {
                 this.Close();
                 return;
             }
 
-            DataContext = settings;
+            DataContext = Settings;
             UpdateGui();
 
             if (automaticStart && StartSync())
@@ -48,13 +52,12 @@ namespace PhonerLiteSync
 
         private bool StartSync()
         {
-            if (settings.AllOk)
+            if (Settings.AllOk)
             {
-                var helper = new Helper();
-                IOHandler.SaveSettings(settings, CsvHandler.SavePath);
+                IoHandler.SaveSettings(Settings, CsvHandler.SettingsPath);
 
                 var handler = new CsvHandler();
-                handler.Run(settings.LocalPath, settings.ExternPath);
+                handler.Run(Settings.LocalPath, Settings.ExternPath);
                 btnRun.Content = "Sync - Finished";
                 btnRun.Background = Brushes.DarkSeaGreen;
                 return true;
@@ -65,27 +68,27 @@ namespace PhonerLiteSync
 
         private void UpdateGui()
         {
-            tbDestination.BorderBrush = settings.ExternPathOk ? Brushes.Gray : Brushes.Crimson;
-            tbDestination.BorderThickness = new Thickness(settings.ExternPathOk ? 1 : 2);
-            tbDestination.Text = settings.ExternPath;
-            tbSoure.BorderBrush = settings.LocalPathOk ? Brushes.Gray : Brushes.Crimson;
-            tbSoure.BorderThickness = new Thickness(settings.LocalPathOk ? 1 : 2);
-            tbSoure.Text = settings.LocalPath;
+            tbDestination.BorderBrush = Settings.ExternPathOk ? Brushes.Gray : Brushes.Crimson;
+            tbDestination.BorderThickness = new Thickness(Settings.ExternPathOk ? 1 : 2);
+            tbDestination.Text = Settings.ExternPath;
+            tbSoure.BorderBrush = Settings.LocalPathOk ? Brushes.Gray : Brushes.Crimson;
+            tbSoure.BorderThickness = new Thickness(Settings.LocalPathOk ? 1 : 2);
+            tbSoure.Text = Settings.LocalPath;
         }
 
         private void btnSource_Click(object sender, RoutedEventArgs e)
         {
-            settings.LocalPath = ShowMyDialog(settings.LocalPath, "csv");
+            Settings.LocalPath = ShowMyDialog(Settings.LocalPath, "csv");
             UpdateGui();
         }
         
         private void btnDestination_Click(object sender, RoutedEventArgs e)
         {
-            settings.ExternPath = ShowMyDialog(settings.ExternPath, "json");
+            Settings.ExternPath = ShowMyDialog(Settings.ExternPath, "json");
             UpdateGui();
         }
 
-        private string ShowMyDialog(string path, string type)
+        private static string ShowMyDialog(string path, string type)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             switch (type)

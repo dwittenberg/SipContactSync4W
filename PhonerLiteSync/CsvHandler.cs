@@ -11,7 +11,7 @@ namespace PhonerLiteSync
     public class CsvHandler
     {
         public static readonly string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-        public static readonly string SavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\PhonerLiteContactSync\Settings.json";
+        public static readonly string SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\PhonerLiteContactSync\Settings.json";
 
 
         public void Run(string localPath, string externPath)
@@ -20,8 +20,8 @@ namespace PhonerLiteSync
             var phonerPath = Helper.KillPhoner();
 
             Console.WriteLine("Read Files");
-            var localFile = IOHandler.LoadLocalCsv(localPath);
-            var externFile = IOHandler.LoadExternPhoneBook(externPath);
+            var localFile = IoHandler.LoadLocalCsv(localPath);
+            var externFile = IoHandler.LoadExternPhoneBook(externPath);
 
             Console.WriteLine("Run Update");
             localFile = UpdateLocal(externFile, localFile);
@@ -30,8 +30,8 @@ namespace PhonerLiteSync
             externFile = CleanUpExternal(externFile);
 
             Console.WriteLine("Write Files");
-            IOHandler.SaveLocalCsv(localFile, localPath);
-            IOHandler.SaveExternPhoneBook(externFile, externPath);
+            IoHandler.SaveLocalCsv(localFile, localPath);
+            IoHandler.SaveExternPhoneBook(externFile, externPath);
 
 
             Console.WriteLine("Start Phoner");
@@ -44,33 +44,7 @@ namespace PhonerLiteSync
             {
                 return localFile;
             }
-
-            // New Values
-            var newValues = externFile.Addresses.Values.Where(m =>
-                m.MyStatus.Status == Status.NewEntry || m.MyStatus.Status == Status.Undefined).ToList();
-
-            foreach (var exEntry in newValues)
-            {
-                var newEntry = new AddressEntry
-                {
-                    Number = exEntry.Number,
-                    Name = exEntry.Name,
-                    Comment = exEntry.Comment,
-                    AllComputers = exEntry.AllComputers,
-                };
-
-                // Replace Local Entry
-                if (localFile.ContainsKey(newEntry.Number))
-                {
-                    localFile.Remove(newEntry.Number);
-                }
-                localFile.Add(newEntry.Number, newEntry);
-                exEntry.MyStatus.Status = Status.UpToDate;
-
-                exEntry.MyStatus.LastChange = DateTime.Now;
-            }
-
-            // Updates
+            
             var listOfChanges = externFile.Addresses.Values.Where(m =>
                 m.LastChanger != null
                 && m.LastChanger.Status != Status.UpToDate
@@ -85,39 +59,20 @@ namespace PhonerLiteSync
                     Comment = exEntry.Comment,
                     AllComputers = exEntry.AllComputers,
                 };
-
-
-                switch (exEntry.LastChanger.Status)
+                
+                if (localFile.ContainsKey(exEntry.Number))
                 {
-                    case Status.NewEntry:
-                        if (localFile.ContainsKey(newEntry.Number))
-                        {
-                            localFile.Remove(newEntry.Number);
-                        }
+                    localFile.Remove(exEntry.Number);
+                }
 
-                        localFile.Add(newEntry.Number, newEntry);
-                        exEntry.MyStatus.Status = Status.UpToDate;
-                        break;
-
-                    case Status.Removed:
-                        if (localFile.ContainsKey(exEntry.Number))
-                        {
-                            localFile.Remove(exEntry.Number);
-                            exEntry.MyStatus.Status = Status.Removed;
-                        }
-
-                        break;
-
-                    case Status.Edited:
-                        if (localFile.ContainsKey(exEntry.Number))
-                        {
-                            localFile.Remove(exEntry.Number);
-                        }
-
-                        localFile.Add(newEntry.Number, newEntry);
-
-                        exEntry.MyStatus.Status = Status.UpToDate;
-                        break;
+                if (exEntry.LastChanger.Status == Status.Removed)
+                {
+                    exEntry.MyStatus.Status = Status.Removed;
+                }
+                else // New, Update, Undefined
+                {
+                    localFile.Add(exEntry.Number, newEntry);
+                    exEntry.MyStatus.Status = Status.UpToDate;
                 }
 
                 exEntry.MyStatus.LastChange = DateTime.Now;
@@ -204,7 +159,8 @@ namespace PhonerLiteSync
 
         private static PhoneBook CleanUpExternal(PhoneBook externFile)
         {
-           var list = externFile.Addresses.Values.ToList()
+           var list = 
+               externFile.Addresses.Values.ToList()
                .Where(address => address.AllComputers.Count(x => 
                    x.Status == address.AllComputers.First().Status 
                    && x.LastChange >= address.LastChanger.LastChange) 

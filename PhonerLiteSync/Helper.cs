@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 
@@ -12,49 +13,31 @@ namespace PhonerLiteSync
     {
         public static string KillPhoner()
         {
-            // Store all running process in the system
-            Process[] runingProcess = Process.GetProcesses();
-            for (int i = 0; i < runingProcess.Length; i++)
+            var p = Process.GetProcesses().FirstOrDefault(p => p.ProcessName == "PhonerLite");
+
+            if (p == null)
             {
-                // compare equivalent process by their name
-                if (runingProcess[i].ProcessName == "PhonerLite")
-                {
-                    // kill  running process
-                    var p = runingProcess[i];
-                    var path = p.MainModule.FileName;
-                    //p.CloseMainWindow();
-
-
-
-
-                    Process.Start("CMD.exe", "taskkill /IM \"PhonerLite.exe\"");
-
-
-
-                    //p.Close();
-                    while (!p.HasExited)
-                    {
-                        Thread.Sleep(300);
-                    }
-
-
-                    return path;
-                }
+                return string.Empty;
+            }
+            
+            while (!p.CloseMainWindow())
+            {
+                Thread.Sleep(300);
             }
 
-            return string.Empty;
+            Thread.Sleep(300);
+            return p.MainModule.FileName;
         }
 
         public static bool RunPhonerLite(string path)
         {
-            // create the  process to launch another exe file
-            if (File.Exists(path))
+            if (!File.Exists(path))
             {
-                Process.Start(path);
-                return true;
+                return false;
             }
 
-            return false;
+            Process.Start(path);
+            return true;
         }
     }
 }

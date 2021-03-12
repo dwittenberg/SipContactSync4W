@@ -16,8 +16,8 @@ namespace Tests
         [Fact]
         public void SettingsWriteRead()
         {
-            IOHandler.SaveSettings(Variables.Settings(), pathSettings);
-            var settings2 = IOHandler.LoadSettings(pathSettings);
+            IoHandler.SaveSettings(Variables.Settings(), pathSettings);
+            var settings2 = IoHandler.LoadSettings(pathSettings);
 
             Assert.Equal(Variables.Settings().ToString(), settings2.ToString());
         }
@@ -27,8 +27,8 @@ namespace Tests
         {
             var before = File.ReadAllLines(pathSettings).ToString();
 
-            var settings = IOHandler.LoadSettings(pathSettings);
-            IOHandler.SaveSettings(settings, pathSettings);
+            var settings = IoHandler.LoadSettings(pathSettings);
+            IoHandler.SaveSettings(settings, pathSettings);
 
             var after = File.ReadAllLines(pathSettings).ToString();
 
@@ -39,8 +39,8 @@ namespace Tests
         public void PhoneBookWriteRead()
         {
 
-            IOHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
-            var phoneBook2 = IOHandler.LoadExternPhoneBook(pathPhoneBook);
+            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
+            var phoneBook2 = IoHandler.LoadExternPhoneBook(pathPhoneBook);
 
             Assert.Equal(Variables.LittlePhoneBook().ToString(), phoneBook2.ToString());
         }
@@ -50,8 +50,8 @@ namespace Tests
         {
             var before = File.ReadAllLines(pathPhoneBook).ToString();
 
-            var phoneBook2 = IOHandler.LoadExternPhoneBook(pathPhoneBook);
-            IOHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
+            var phoneBook2 = IoHandler.LoadExternPhoneBook(pathPhoneBook);
+            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
 
             var after = File.ReadAllLines(pathPhoneBook).ToString();
 

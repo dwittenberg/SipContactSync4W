@@ -8,7 +8,7 @@ namespace Tests
 {
     public static class Variables
     {
-        public static string SettingsPath = @"C:\tmp\settings.json";
+        public static string SettingsPath = @"C:\tmp\Settings.json";
         public static string ExternPath = @"C:\tmp\externPhonebook.json";
         public static string InternPath = @"C:\tmp\internPhonebook.csv";
 

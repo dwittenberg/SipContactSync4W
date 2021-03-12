@@ -11,7 +11,7 @@ using PhonerLiteSync.Model;
 
 namespace PhonerLiteSync
 {
-    public static class IOHandler
+    public static class IoHandler
     {
         public static Settings LoadSettings(string path)
         {
@@ -32,7 +32,7 @@ namespace PhonerLiteSync
             {
                 settings.LastRestart = DateTime.Now;
 
-                JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+                var options = new JsonSerializerOptions { WriteIndented = true };
                 var jsonString = JsonSerializer.Serialize(settings, options);
 
                 WriteToFile(path, jsonString);
@@ -51,7 +51,7 @@ namespace PhonerLiteSync
                 return result;
             }
 
-            TextFieldParser parser = new TextFieldParser(path)
+            var parser = new TextFieldParser(path)
             {
                 TextFieldType = FieldType.Delimited
             };
@@ -61,7 +61,7 @@ namespace PhonerLiteSync
             while (!parser.EndOfData)
             {
                 //Process row
-                string[] fields = parser.ReadFields();
+                var fields = parser.ReadFields();
 
                 var entry = new AddressEntry(fields);
 
@@ -79,7 +79,7 @@ namespace PhonerLiteSync
             var csv = new StringBuilder();
             localFile.Values.ToList().ForEach(m => csv.AppendLine(m.ToLocalString()));
 
-            IOHandler.WriteToFile(path, csv.ToString());
+            WriteToFile(path, csv.ToString());
         }
 
         public static PhoneBook LoadExternPhoneBook(string path)
@@ -92,12 +92,12 @@ namespace PhonerLiteSync
                 var myComputer = pb.Computers.FirstOrDefault(c => c.Name == Environment.MachineName);
                 if (myComputer == null)
                 {
-                    var id = pb.Computers.Count();
+                    // Add this PC to PhoneBook
+                    var id = pb.Computers.Length;
                     myComputer = new Computer { Id = id, Name = Environment.MachineName };
                     pb.Computers = pb.Computers.Append(myComputer).ToArray();
 
                     pb.Addresses.Values.ToList().ForEach(e => e.AllComputers = e.AllComputers.Append(new ComputerStatus { Id = id, LastChange = DateTime.MinValue, Status = Status.NewEntry }).ToArray());
-                    pb.MyId = myComputer.Id;
                 }
 
                 pb.MyId = myComputer.Id;
@@ -106,7 +106,7 @@ namespace PhonerLiteSync
 
                 return pb;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (!File.Exists(path))
                 {

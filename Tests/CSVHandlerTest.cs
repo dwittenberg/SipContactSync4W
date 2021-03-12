@@ -15,9 +15,9 @@ namespace Tests
         [Fact]
         public void ReadLocalCsvSettings()
         {
-            IOHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
-            IOHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
-            IOHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
+            IoHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
+            IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
+            IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
 
             var handler = new CsvHandler();
             handler.Run(Variables.InternPath, Variables.ExternPath);
@@ -37,9 +37,9 @@ namespace Tests
         [Fact]
         public void ReadLocalCsvExtern()
         {
-            IOHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
-            IOHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
-            IOHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
+            IoHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
+            IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
+            IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
 
             var handler = new CsvHandler();
             handler.Run(Variables.InternPath, Variables.ExternPath);
@@ -52,9 +52,9 @@ namespace Tests
         [Fact]
         public void ReadLocalCsvIntern()
         {
-            IOHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
-            IOHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
-            IOHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
+            IoHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
+            IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
+            IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
 
             var handler = new CsvHandler();
             handler.Run(Variables.InternPath, Variables.ExternPath);
