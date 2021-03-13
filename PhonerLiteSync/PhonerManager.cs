@@ -16,21 +16,33 @@ namespace PhonerLiteSync
 
         public void KillPhoner()
         {
-            var p = Process.GetProcesses().FirstOrDefault(p => p.ProcessName == "PhonerLite");
+            var proc = Process.GetProcesses().
+                Where(p => p.ProcessName.Contains("PhonerLite")).ToList();
 
-            if (p == null)
+            foreach (var p in proc)
             {
-                return;
-            }
+                if (p == null)
+                {
+                    continue;
+                }
 
-            _phonerPath = p.MainModule.FileName;
+                _phonerPath = p.MainModule.FileName;
 
-            while (!p.CloseMainWindow())
-            {
-                Thread.Sleep(300);
-            }
+                try
+                {
+                    int i = 0;
+                    while (i < 40 && p.MainModule != null)
+                    {
+                        p.CloseMainWindow();
+                        Thread.Sleep(500);
+                        i++;
+                    }
 
-            Thread.Sleep(300);
+                    p.Close();
+                }
+                catch (Exception)
+                { }
+            }           
         }
 
         public bool RunPhonerLite()
