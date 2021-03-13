@@ -13,7 +13,7 @@ namespace PhonerLiteSync.Model
     {
         public Settings()
         {
-            LocalPath = Environment.ExpandEnvironmentVariables(@"%appData%\PhonerLite\phonebook.csv");
+            PhoneBookPath = Environment.ExpandEnvironmentVariables(@"%appData%\PhonerLite\phonebook.csv");
             ExternPath = string.Empty;
 
             WaitingTimeInMinutes = 30;
@@ -29,16 +29,21 @@ namespace PhonerLiteSync.Model
                 return;
             }
 
-            LocalPath = s.LocalPath;
+            PhoneBookPath = s.PhoneBookPath;
             ExternPath = s.ExternPath;
             WaitingTimeInMinutes = s.WaitingTimeInMinutes;
             LastRestart = s.LastRestart;
         }
 
+        [JsonIgnore]
+        public string SettingsPath { get; private set; }
+        [JsonIgnore]
+        public string PhonerConfigPath { get; private set; }
+
         #region LocalPath
         private string _l;
 
-        public string LocalPath
+        public string PhoneBookPath
         {
             get => _l;
             set
@@ -49,6 +54,12 @@ namespace PhonerLiteSync.Model
                     var f = new FileInfo(value);
                     LocalPathOk = (Directory.Exists(f.DirectoryName) ? 1 : 0)
                                   + (f.Exists ? 1 : 0);
+
+                    if (LocalPathOk == 2 && File.Exists(Path.Combine(f.DirectoryName, "ContactSyncSettings.json")))
+                    {
+                        SettingsPath = Path.Combine(f.DirectoryName, "ContactSyncSettings.json");
+                        PhonerConfigPath = Path.Combine(f.DirectoryName, "PhonerLite.ini");
+                    }
                 }
                 catch (Exception)
                 {
@@ -58,7 +69,7 @@ namespace PhonerLiteSync.Model
                 LocalBackground = Colors.StatusBrushesBg[LocalPathOk];
                 LocalThickness = new Thickness(LocalPathOk > 0 ? 1 : 2);
 
-                RaisePropertyChanged(nameof(LocalPath));
+                RaisePropertyChanged(nameof(PhoneBookPath));
                 RaisePropertyChanged(nameof(LocalBackground));
                 RaisePropertyChanged(nameof(LocalThickness));
                 SetAllOk();
@@ -94,7 +105,7 @@ namespace PhonerLiteSync.Model
             }
         }
 
-        private int RateFileName(string value)
+        private static int RateFileName(string value)
         {
             try
             {

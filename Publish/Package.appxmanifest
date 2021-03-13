@@ -9,7 +9,7 @@
   <Identity
     Name="DoWi.PhonerLiteSync"
     Publisher="CN=Dominik Wittenberg"
-    Version="0.9.29.0" />
+    Version="0.9.41.0" />
 
   <Properties>
     <DisplayName>PhonerLiteSync</DisplayName>
