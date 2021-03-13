@@ -17,6 +17,6 @@ IF ERRORLEVEL 1 (
 
 :CONTINUE
 
-powershell -Command "(gc %appdata%/PhonerLite/PhonerLite.ini) -replace 'terminated=(.)*', 'terminated=%appdata%\PhonerLiteContactSync\syncstart.bat' | Out-File -encoding ASCII %appdata%/PhonerLite/PhonerLite.ini"
+powershell -Command "(gc $env:APPDATA/PhonerLite/PhonerLite.ini) -replace 'terminated=(.)*', 'terminated=%appdata%\PhonerLiteContactSync\syncstart.bat' | Out-File -encoding ASCII $env:APPDATA/PhonerLite/PhonerLite.ini"
 
 start "PhonerLite" "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\PhonerLite\PhonerLite.lnk"

@@ -8,34 +8,45 @@ using PhonerLiteSync.Model;
 
 namespace PhonerLiteSync
 {
-    public class CsvHandler
+    public static class CsvHandler
     {
         public static readonly string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-        public static readonly string SettingsPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\PhonerLiteContactSync\Settings.json";
+        public static readonly string SettingsPath = Environment.ExpandEnvironmentVariables(@"%appData%\PhonerLite\ContactSyncSettings.json");
 
 
-        public void Run(string localPath, string externPath)
+        public static bool Run(string localPath, string externPath)
         {
-            Console.WriteLine("Stop Phoner");
-            var phonerPath = Helper.KillPhoner();
+            try
+            {
+                Console.WriteLine("Stop Phoner");
+                    var pm = new PhonerManager();
+                pm.KillPhoner();
+                pm.CheckAutorunSetting();
 
-            Console.WriteLine("Read Files");
-            var localFile = IoHandler.LoadLocalCsv(localPath);
-            var externFile = IoHandler.LoadExternPhoneBook(externPath);
+                Console.WriteLine("Read Files");
+                var localFile = IoHandler.LoadLocalCsv(localPath);
+                var externFile = IoHandler.LoadExternPhoneBook(externPath);
 
-            Console.WriteLine("Run Update");
-            localFile = UpdateLocal(externFile, localFile);
-            externFile = UpdateExternal(localFile, externFile);
+                Console.WriteLine("Run Update");
+                localFile = UpdateLocal(externFile, localFile);
+                externFile = UpdateExternal(localFile, externFile);
 
-            externFile = CleanUpExternal(externFile);
+                externFile = CleanUpExternal(externFile);
 
-            Console.WriteLine("Write Files");
-            IoHandler.SaveLocalCsv(localFile, localPath);
-            IoHandler.SaveExternPhoneBook(externFile, externPath);
+                Console.WriteLine("Write Files");
+                IoHandler.SaveLocalCsv(localFile, localPath);
+                IoHandler.SaveExternPhoneBook(externFile, externPath);
 
 
-            Console.WriteLine("Start Phoner");
-            Helper.RunPhonerLite(phonerPath);
+                Console.WriteLine("Start Phoner");
+                pm.RunPhonerLite();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static Dictionary<string, AddressEntry> UpdateLocal(PhoneBook externFile, Dictionary<string, AddressEntry> localFile)

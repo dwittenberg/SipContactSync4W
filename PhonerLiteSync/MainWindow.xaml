@@ -4,19 +4,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PhonerLiteSync"
+        xmlns:model="clr-namespace:PhonerLiteSync.Model"
         mc:Ignorable="d"
-        Title="PhonerLite Contact Sync" Height="248" Width="566">
-    <Grid>
-        <Button IsEnabled="{Binding AllOk}" Content="Run" Margin="42,163,55,0" VerticalAlignment="Top" Click="StartSync" Height="31"/>
+        Title="PhonerLite Contact Sync 0.9" Height="248" Width="566">
+    <Grid d:DataContext="{d:DesignInstance model:Settings, d:IsDesignTimeCreatable=True}">
         <Label Content="Intern Path:" HorizontalAlignment="Left" Margin="42,60,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="tbSoure" Margin="120,58,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding LocalPath, Mode = TwoWay}" Height="40"/>
-        <Button Name="btnSource"  Content="..." Margin="0,58,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="btnSource_Click"/>
+        <TextBox Name="TbLocal" Margin="120,58,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding Path =LocalPath, Mode = TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=600}" Height="40"
+                 Background="{Binding LocalBackground}" BorderThickness="{Binding LocalThickness}"/>
+        <Button Name="BtnLocale"  Content="..." Margin="0,58,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="BtnSource_Click"/>
 
         <Label Content="Extern Path:" HorizontalAlignment="Left" Margin="42,113,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="tbDestination" Margin="120,111,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding ExternPath, Mode = TwoWay}" Height="40"/>
-        <Button Name="btnDestination"  Content="..." Margin="0,111,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="btnDestination_Click"/>
-        <Label Content="Sync PhonerLite Contacts with a Newtwork File" HorizontalAlignment="Left" Margin="45,7,0,0" VerticalAlignment="Top" FontWeight="Bold" FontSize="20"/>
+        <TextBox Name="TbExtern" Margin="120,111,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding Path = ExternPath, Mode = TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=600}" Height="40" 
+                 Background="{Binding ExternBackground}" BorderThickness="{Binding ExternThickness}" ToolTip="Gray - File found&#xa;Orange - CreateFile&#xa;Red - No Filename&#xa;&#xa;Filename must have an extension."/>
+        <Button Name="BtnExtern"  Content="..." Margin="0,111,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="BtnDestination_Click"/>
+        <Label Content="Sync PhonerLite Contacts with a Network File" HorizontalAlignment="Left" Margin="45,7,0,0" VerticalAlignment="Top" FontWeight="Bold" FontSize="20"/>
 
-        <Button Name="btnRun" Content="Run" Margin="42,163,55,0" VerticalAlignment="Top" Click="StartSync" Height="31"/>
+        <Button Name="BtnRun" IsEnabled="{Binding AllOk, Mode=OneWay}" Content="Run" Margin="42,163,55,0" VerticalAlignment="Top" Click="StartSync" Height="31"/>
     </Grid>
 </Window>

@@ -19,8 +19,7 @@ namespace Tests
             IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
             IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
 
-            var handler = new CsvHandler();
-            handler.Run(Variables.InternPath, Variables.ExternPath);
+            CsvHandler.Run(Variables.InternPath, Variables.ExternPath);
 
             var now = DateTime.Now;
             var s1 = new Settings(Variables.SettingsPath)
@@ -40,9 +39,8 @@ namespace Tests
             IoHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
             IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
             IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
-
-            var handler = new CsvHandler();
-            handler.Run(Variables.InternPath, Variables.ExternPath);
+            
+            CsvHandler.Run(Variables.InternPath, Variables.ExternPath);
 
             var e1 = File.ReadAllText(Variables.ExternPath);
 
@@ -55,9 +53,8 @@ namespace Tests
             IoHandler.WriteToFile(Variables.SettingsPath, Variables.Settings().ToJson());
             IoHandler.WriteToFile(Variables.ExternPath, Variables.Extern1);
             IoHandler.WriteToFile(Variables.InternPath, Variables.Intern1);
-
-            var handler = new CsvHandler();
-            handler.Run(Variables.InternPath, Variables.ExternPath);
+            
+            CsvHandler.Run(Variables.InternPath, Variables.ExternPath);
 
             Assert.Equal(Variables.Intern2.Trim(), File.ReadAllText(Variables.InternPath).Trim());
         }

@@ -18,7 +18,7 @@ namespace Tests
                 ExternPath = ExternPath,
                 LastRestart = DateTime.Now,
                 LocalPath = @"C:\Users\Häschen\AppData\Roaming\PhonerLite\phonebook.csv",
-                WaitingTime = 30
+                WaitingTimeInMinutes = 30
             };
 
         public static PhoneBook LittlePhoneBook()

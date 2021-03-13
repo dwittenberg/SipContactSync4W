@@ -1,18 +1,22 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Windows;
+using System.Windows.Media;
 
 namespace PhonerLiteSync.Model
 {
     [Serializable]
-    public class Settings
+    public class Settings : INotifyPropertyChanged
     {
         public Settings()
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            LocalPath = Environment.ExpandEnvironmentVariables(appData + @"\PhonerLite\phonebook.csv");
+            LocalPath = Environment.ExpandEnvironmentVariables(@"%appData%\PhonerLite\phonebook.csv");
+            ExternPath = string.Empty;
 
-            WaitingTime = 30;
+            WaitingTimeInMinutes = 30;
             LastRestart = DateTime.MinValue;
         }
 
@@ -20,73 +24,141 @@ namespace PhonerLiteSync.Model
         {
             var jsonString = File.ReadAllText(path);
             var s = JsonSerializer.Deserialize<Settings>(jsonString);
+            if (s == null)
+            {
+                return;
+            }
+
             LocalPath = s.LocalPath;
             ExternPath = s.ExternPath;
-            WaitingTime = s.WaitingTime;
+            WaitingTimeInMinutes = s.WaitingTimeInMinutes;
             LastRestart = s.LastRestart;
         }
 
-        private string l;
+        #region LocalPath
+        private string _l;
 
         public string LocalPath
         {
-            get => l;
+            get => _l;
             set
             {
-                l = value;
-                LocalPathOk = File.Exists(l);
+                try
+                {
+                    _l = value;
+                    var f = new FileInfo(value);
+                    LocalPathOk = (Directory.Exists(f.DirectoryName) ? 1 : 0)
+                                  + (f.Exists ? 1 : 0);
+                }
+                catch (Exception)
+                {
+                    LocalPathOk = 0;
+                }
+
+                LocalBackground = Colors.StatusBrushesBg[LocalPathOk];
+                LocalThickness = new Thickness(LocalPathOk > 0 ? 1 : 2);
+
+                RaisePropertyChanged(nameof(LocalPath));
+                RaisePropertyChanged(nameof(LocalBackground));
+                RaisePropertyChanged(nameof(LocalThickness));
                 SetAllOk();
             }
         }
 
-        public bool LocalPathOk { get; private set; }
+        [JsonIgnore]
+        public int LocalPathOk { get; private set; }
+        [JsonIgnore]
+        public SolidColorBrush LocalBackground { get; set; }
+        [JsonIgnore]
+        public Thickness LocalThickness { get; set; }
+        #endregion
 
-        private string e;
+        #region Extern
+        private string _e;
 
         public string ExternPath
         {
-            get => e;
+            get => _e;
             set
             {
-                if (value == null || string.IsNullOrWhiteSpace(value))
-                {
-                    return;
-                }
+                _e = value;
+                ExternPathOk = RateFileName(value);
 
-                e = value;
-                var f = new FileInfo(value);
+                ExternBackground = Colors.StatusBrushesBg[ExternPathOk];
+                ExternThickness = new Thickness(ExternPathOk > 0 ? 1 : 2);
 
-                if (Directory.Exists(f.DirectoryName))
-                {
-                    ExternPathOk = true;
-                    SetAllOk();
-                    return;
-                }
-
-                var d = Directory.CreateDirectory(f.DirectoryName);
-                ExternPathOk = d.Exists;
+                RaisePropertyChanged(nameof(ExternPath));
+                RaisePropertyChanged(nameof(ExternBackground));
+                RaisePropertyChanged(nameof(ExternThickness));
                 SetAllOk();
             }
         }
 
-        public bool ExternPathOk { get; private set; }
+        private int RateFileName(string value)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return 0;
+                }
 
+                var f = new FileInfo(value);
+
+                // Existing File - all ok
+                if (f.Exists)
+                {
+                    return (int)StatusColor.Ok;
+                }
+
+                if (string.IsNullOrWhiteSpace(f.Extension))
+                {
+                    return 0;
+                }
+
+                // Filename is valid - can be created
+                File.Create(value);
+                File.Delete(value);
+
+                return (int)StatusColor.Problematic;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
+        [JsonIgnore]
+        public int ExternPathOk { get; private set; }
+        [JsonIgnore]
+        public SolidColorBrush ExternBackground { get; set; }
+        [JsonIgnore]
+        public Thickness ExternThickness { get; set; }
+        #endregion
+
+        [JsonIgnore]
         public bool AllOk { get; private set; }
 
         private void SetAllOk()
         {
-            AllOk = LocalPathOk && ExternPathOk;
+            AllOk = LocalPathOk > 0 && ExternPathOk > 0;
+            RaisePropertyChanged(nameof(AllOk));
         }
 
         public DateTime LastRestart { get; set; }
 
-        // WaitingTime in minutes
-        public int WaitingTime { get; set; }
+        public int WaitingTimeInMinutes { get; set; }
 
         public string ToJson()
         {
-            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions { WriteIndented = true };
             return JsonSerializer.Serialize(this, options);
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void RaisePropertyChanged(string propertyName)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
     }
 }

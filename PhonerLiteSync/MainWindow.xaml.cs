@@ -5,6 +5,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 
 using PhonerLiteSync.Model;
+using Colors = PhonerLiteSync.Model.Colors;
 
 namespace PhonerLiteSync
 {
@@ -17,26 +18,25 @@ namespace PhonerLiteSync
 
         public MainWindow()
         {
-            InitializeComponent(); 
+            InitializeComponent();
 
             var args = App.Args;
 #if RELEASE
             var automaticStart = args != null;
 #else
-            var automaticStart = false;// args != null;
+            const bool automaticStart = false; // args != null;
 #endif
-            
-            Settings = IoHandler.LoadSettings(CsvHandler.SettingsPath);
 
+            Settings = IoHandler.LoadSettings(CsvHandler.SettingsPath);
+            
             var timeSinceLastRestart = DateTime.Now - Settings.LastRestart;
-            if (timeSinceLastRestart.TotalMinutes < Settings.WaitingTime && automaticStart)
+            if (timeSinceLastRestart.TotalMinutes < Settings.WaitingTimeInMinutes && automaticStart)
             {
                 this.Close();
                 return;
             }
 
             DataContext = Settings;
-            UpdateGui();
 
             if (automaticStart && StartSync())
             {
@@ -45,69 +45,53 @@ namespace PhonerLiteSync
         }
 
         private void StartSync(object sender, RoutedEventArgs e)
-        {
-            UpdateGui();
-            StartSync();
-        }
+            => StartSync();
 
         private bool StartSync()
         {
-            if (Settings.AllOk)
-            {
-                IoHandler.SaveSettings(Settings, CsvHandler.SettingsPath);
+            if (!Settings.AllOk) return false;
 
-                var handler = new CsvHandler();
-                handler.Run(Settings.LocalPath, Settings.ExternPath);
-                btnRun.Content = "Sync - Finished";
-                btnRun.Background = Brushes.DarkSeaGreen;
+            BtnRun.Content = "Sync - Run";
+
+            IoHandler.SaveSettings(Settings, CsvHandler.SettingsPath);
+
+            if (CsvHandler.Run(Settings.LocalPath, Settings.ExternPath))
+            {
+                BtnRun.Content = "Sync - Finished";
+                BtnRun.Background = Brushes.DarkSeaGreen;
+                BtnRun.BorderThickness = new Thickness(2);
+                BtnRun.BorderBrush = Brushes.Green;
                 return true;
             }
 
+            BtnRun.Background = Colors.StatusBrushesBg[(int)StatusColor.Problematic];
+            BtnRun.Content = "Sync - Problem";
+            BtnRun.BorderThickness = new Thickness(2);
+            BtnRun.BorderBrush = Brushes.Orange;
             return false;
         }
 
-        private void UpdateGui()
-        {
-            tbDestination.BorderBrush = Settings.ExternPathOk ? Brushes.Gray : Brushes.Crimson;
-            tbDestination.BorderThickness = new Thickness(Settings.ExternPathOk ? 1 : 2);
-            tbDestination.Text = Settings.ExternPath;
-            tbSoure.BorderBrush = Settings.LocalPathOk ? Brushes.Gray : Brushes.Crimson;
-            tbSoure.BorderThickness = new Thickness(Settings.LocalPathOk ? 1 : 2);
-            tbSoure.Text = Settings.LocalPath;
-        }
+        private void BtnSource_Click(object sender, RoutedEventArgs e)
+        => Settings.LocalPath = ShowMyDialog(Settings.LocalPath, "csv");
 
-        private void btnSource_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.LocalPath = ShowMyDialog(Settings.LocalPath, "csv");
-            UpdateGui();
-        }
-        
-        private void btnDestination_Click(object sender, RoutedEventArgs e)
-        {
-            Settings.ExternPath = ShowMyDialog(Settings.ExternPath, "json");
-            UpdateGui();
-        }
+        private void BtnDestination_Click(object sender, RoutedEventArgs e)
+        => Settings.ExternPath = ShowMyDialog(Settings.ExternPath, "json");
 
         private static string ShowMyDialog(string path, string type)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            switch (type)
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = type switch
             {
-                case "csv":
-                    openFileDialog.Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*";
-                    break;
-                case "json":
-                    openFileDialog.Filter = "JSON File (*.json)|*.json|All files (*.*)|*.*";
-                    break;
-            }
-       
-            openFileDialog.InitialDirectory = path;
-            if (openFileDialog.ShowDialog() == true)
-            {
-                return openFileDialog.FileName;
-            }
+                "csv" => "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
+                "json" => "JSON File (*.json)|*.json|All files (*.*)|*.*",
+                _ => openFileDialog.Filter
+            };
 
-            return string.Empty;
+            openFileDialog.InitialDirectory = path;
+
+            return openFileDialog.ShowDialog() == true
+                ? openFileDialog.FileName
+                : path;
         }
     }
 }

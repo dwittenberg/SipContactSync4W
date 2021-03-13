@@ -1,2 +1,2 @@
 @ECHO OFF
-start "Sync" "%appdata%\PhonerLiteContactSync\PhonerLiteSync.exe" -fast
+start "Sync" "%~dp0/PhonerLiteSync.exe" -fast
