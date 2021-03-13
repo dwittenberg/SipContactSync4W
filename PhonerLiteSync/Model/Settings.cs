@@ -55,7 +55,7 @@ namespace PhonerLiteSync.Model
                     LocalPathOk = (Directory.Exists(f.DirectoryName) ? 1 : 0)
                                   + (f.Exists ? 1 : 0);
 
-                    if (LocalPathOk == 2 && File.Exists(Path.Combine(f.DirectoryName, "ContactSyncSettings.json")))
+                    if (LocalPathOk == 2 && File.Exists(f.FullName))
                     {
                         SettingsPath = Path.Combine(f.DirectoryName, "ContactSyncSettings.json");
                         PhonerConfigPath = Path.Combine(f.DirectoryName, "PhonerLite.ini");
