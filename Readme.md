@@ -3,7 +3,7 @@ Dieses Programm synchronisiert das Telefonbuch von Phoner mit einer CSV auf eine
 
 Achtung: PhonerLite speichert seine CSV nur, wenn es geschlossen wird und ließt die
 CSV wenn es geöffnet wird. Daher bitte PhonerLite schließen, bevor der Sync ausgeführt wird.
-## Hinweis: Diese Software ist im Beta Status
+## Hinweis: Diese Software ist im Beta Status. Über Rückmeldungen freue ich mich! ;-) 
 ## Ablauf:
 1. Die Konfiguration wird geladen.
 2. Extern und Intern werden geladen.
@@ -17,6 +17,13 @@ Wird an 2 Geräten eine Änderung am Eintrag vorgenommen, bleibt der Eintrag erh
 
 ### Neuer PC
 Die Datenbank am Netzwerklaufwerk wird gelesen. Danach wird das eigene Gerät der Geräteliste hinzugefügt und der Status für jeden Eintrag intern auf Neu gesetzt. Nachdem alles gelesen wurde, steht der Status auf UpToDate.
+
+### Installation
+Ich bin kein Premium Dev - daher habe ich kein zertiziziertes Zertifikat. Dpwnload unter: https://ju-da.space/setup/PhonerLiteSync429/index.html
+Daher muss mein Zertifikat einmalig auf dem **Localen Computer** unter **Vertrauenswürdige Stammzertifikate** gespichert werden. Es ist unter "Additional Links" als "Publisher Certificate" zu finden. **Sonnst schlägt die Installation fehl!**
+
+### Update
+Nach einem Update muss das Programm einmal von Hand geöffnet und der Sync angestoßen werden. Sonnst startet Phoner weiterhin die alte Version.
 
 ## Allgemeines Programmverhalten
 ### Konfiguraion
