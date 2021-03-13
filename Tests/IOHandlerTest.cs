@@ -8,16 +8,16 @@ using Xunit;
 
 namespace Tests
 {
-    public class IOTester
+    public class IoHandlerTest
     {
-        private string pathSettings = Variables.SettingsPath;
-        private string pathPhoneBook = Variables.SettingsPath;
+        private readonly string _pathSettings = Variables.SettingsPath;
+        private readonly string _pathPhoneBook = Variables.SettingsPath;
 
         [Fact]
         public void SettingsWriteRead()
         {
-            IoHandler.SaveSettings(Variables.Settings(), pathSettings);
-            var settings2 = IoHandler.LoadSettings(pathSettings);
+            PhonerManager.SaveSettings(Variables.Settings());
+            var settings2 = PhonerManager.LoadSettings();
 
             Assert.Equal(Variables.Settings().ToString(), settings2.ToString());
         }
@@ -25,12 +25,12 @@ namespace Tests
         [Fact]
         public void SettingsReadWrite()
         {
-            var before = File.ReadAllLines(pathSettings).ToString();
+            var before = File.ReadAllLines(_pathSettings).ToString();
 
-            var settings = IoHandler.LoadSettings(pathSettings);
-            IoHandler.SaveSettings(settings, pathSettings);
+            var settings = PhonerManager.LoadSettings();
+            PhonerManager.SaveSettings(settings);
 
-            var after = File.ReadAllLines(pathSettings).ToString();
+            var after = File.ReadAllLines(_pathSettings).ToString();
 
             Assert.Equal(before, after);
         }
@@ -39,8 +39,8 @@ namespace Tests
         public void PhoneBookWriteRead()
         {
 
-            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
-            var phoneBook2 = IoHandler.LoadExternPhoneBook(pathPhoneBook);
+            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), _pathPhoneBook);
+            var phoneBook2 = IoHandler.LoadExternPhoneBook(_pathPhoneBook);
 
             Assert.Equal(Variables.LittlePhoneBook().ToString(), phoneBook2.ToString());
         }
@@ -48,12 +48,12 @@ namespace Tests
         [Fact]
         public void PhoneBookReadWrite()
         {
-            var before = File.ReadAllLines(pathPhoneBook).ToString();
+            var before = File.ReadAllLines(_pathPhoneBook).ToString();
 
-            var phoneBook2 = IoHandler.LoadExternPhoneBook(pathPhoneBook);
-            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), pathPhoneBook);
+            var phoneBook2 = IoHandler.LoadExternPhoneBook(_pathPhoneBook);
+            IoHandler.SaveExternPhoneBook(Variables.LittlePhoneBook(), _pathPhoneBook);
 
-            var after = File.ReadAllLines(pathPhoneBook).ToString();
+            var after = File.ReadAllLines(_pathPhoneBook).ToString();
 
             Assert.Equal(before, after);
         }

@@ -9,7 +9,7 @@
         Title="PhonerLite Contact Sync 0.9" Height="248" Width="566">
     <Grid d:DataContext="{d:DesignInstance model:Settings, d:IsDesignTimeCreatable=True}">
         <Label Content="Intern Path:" HorizontalAlignment="Left" Margin="42,60,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="TbLocal" Margin="120,58,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding Path =LocalPath, Mode = TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=600}" Height="40"
+        <TextBox Name="TbLocal" Margin="120,58,90,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="{Binding Path =PhoneBookPath, Mode = TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=600}" Height="40"
                  Background="{Binding LocalBackground}" BorderThickness="{Binding LocalThickness}"/>
         <Button Name="BtnLocale"  Content="..." Margin="0,58,55,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="30" Height="40" Click="BtnSource_Click"/>
 

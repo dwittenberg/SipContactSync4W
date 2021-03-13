@@ -17,7 +17,7 @@ namespace Tests
             {
                 ExternPath = ExternPath,
                 LastRestart = DateTime.Now,
-                LocalPath = @"C:\Users\Häschen\AppData\Roaming\PhonerLite\phonebook.csv",
+                PhoneBookPath = @"C:\Users\Häschen\AppData\Roaming\PhonerLite\phonebook.csv",
                 WaitingTimeInMinutes = 30
             };
 

@@ -27,7 +27,7 @@ namespace PhonerLiteSync
             const bool automaticStart = false; // args != null;
 #endif
 
-            Settings = IoHandler.LoadSettings(CsvHandler.SettingsPath);
+            Settings = PhonerManager.LoadSettings();
             
             var timeSinceLastRestart = DateTime.Now - Settings.LastRestart;
             if (timeSinceLastRestart.TotalMinutes < Settings.WaitingTimeInMinutes && automaticStart)
@@ -53,9 +53,9 @@ namespace PhonerLiteSync
 
             BtnRun.Content = "Sync - Run";
 
-            IoHandler.SaveSettings(Settings, CsvHandler.SettingsPath);
+            PhonerManager.SaveSettings(Settings);
 
-            if (CsvHandler.Run(Settings.LocalPath, Settings.ExternPath))
+            if (MainManager.Run(Settings.PhoneBookPath, Settings.ExternPath, Settings.PhonerConfigPath))
             {
                 BtnRun.Content = "Sync - Finished";
                 BtnRun.Background = Brushes.DarkSeaGreen;
@@ -72,7 +72,7 @@ namespace PhonerLiteSync
         }
 
         private void BtnSource_Click(object sender, RoutedEventArgs e)
-        => Settings.LocalPath = ShowMyDialog(Settings.LocalPath, "csv");
+        => Settings.PhoneBookPath = ShowMyDialog(Settings.PhoneBookPath, "csv");
 
         private void BtnDestination_Click(object sender, RoutedEventArgs e)
         => Settings.ExternPath = ShowMyDialog(Settings.ExternPath, "json");

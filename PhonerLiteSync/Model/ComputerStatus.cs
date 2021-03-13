@@ -20,7 +20,7 @@ namespace PhonerLiteSync.Model
 
         public override string ToString()
             => Id +
-               LastChange.ToString(CsvHandler.DateTimeFormat) +
+               LastChange.ToString(MainManager.DateTimeFormat) +
                Status switch
                {
                    Status.NewEntry => "+",

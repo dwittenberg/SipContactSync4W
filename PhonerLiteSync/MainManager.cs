@@ -8,20 +8,18 @@ using PhonerLiteSync.Model;
 
 namespace PhonerLiteSync
 {
-    public static class CsvHandler
+    public static class MainManager
     {
         public static readonly string DateTimeFormat = "yyyy-MM-dd HH:mm:ss,fff";
-        public static readonly string SettingsPath = Environment.ExpandEnvironmentVariables(@"%appData%\PhonerLite\ContactSyncSettings.json");
-
-
-        public static bool Run(string localPath, string externPath)
+     
+        public static bool Run(string localPath, string externPath, string phonerConfigPath)
         {
             try
             {
                 Console.WriteLine("Stop Phoner");
                     var pm = new PhonerManager();
                 pm.KillPhoner();
-                pm.CheckAutorunSetting();
+                pm.CheckAutorunSetting(phonerConfigPath);
 
                 Console.WriteLine("Read Files");
                 var localFile = IoHandler.LoadLocalCsv(localPath);

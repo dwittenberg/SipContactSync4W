@@ -13,36 +13,6 @@ namespace PhonerLiteSync
 {
     public static class IoHandler
     {
-        public static Settings LoadSettings(string path)
-        {
-            try
-            {
-                var jsonString = File.ReadAllText(path);
-                return JsonSerializer.Deserialize<Settings>(jsonString);
-            }
-            catch
-            {
-                return new Settings();
-            }
-        }
-
-        public static void SaveSettings(Settings settings, string path)
-        {
-            try
-            {
-                settings.LastRestart = DateTime.Now;
-
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var jsonString = JsonSerializer.Serialize(settings, options);
-
-                WriteToFile(path, jsonString);
-            }
-            catch
-            {
-                // ignored
-            }
-        }
-
         public static Dictionary<string, AddressEntry> LoadLocalCsv(string path)
         {
             var result = new Dictionary<string, AddressEntry>();

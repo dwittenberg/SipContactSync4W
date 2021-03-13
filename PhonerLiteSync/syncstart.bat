@@ -5,4 +5,4 @@ start "Sync" "%~dp0/PhonerLiteSync.exe" -fast
 @Echo Bitte warten
 @Echo Gleich gehts weiter...
 @Echo Off
-timeout /t 4
+timeout /t 2

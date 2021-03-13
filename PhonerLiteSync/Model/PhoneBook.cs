@@ -27,7 +27,7 @@ namespace PhonerLiteSync
                 entry.MyStatus = null;
             }
 
-            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions { WriteIndented = true };
             return JsonSerializer.Serialize(this, options);
         }
     }
